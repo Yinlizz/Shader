@@ -2,10 +2,7 @@ Shader "Custom/TestiShader"
 {
     Properties
     {
-        _Color ("Color", Color) = (1,1,1,1)
-        _MainTex ("Albedo (RGB)", 2D) = "white" {}
-        _Glossiness ("Smoothness", Range(0,1)) = 0.5
-        _Metallic ("Metallic", Range(0,1)) = 0.0
+        _Color("Color", Color) = (1, 1, 1, 1)
     }
     SubShader
     {
@@ -28,25 +25,33 @@ Shader "Custom/TestiShader"
             struct Attributes
             {
                 float3 positionsOS : POSITION;
+                float3 normalOS : NORMAL;   /*KESKEN*/
             };
 
             struct Varyings
             {
                 float4 positionHCS : SV_POSITION;
+                float3 positionWS : TEXCOORD0;
             };
 
+            CBUFFER_START(UnityPerMaterial)
+            float4 _Color;
+            CBUFFER_END
+            
             Varyings Vert(const Attributes input)
             {
                 Varyings output;
 
                 output.positionHCS = TransformObjectToHClip(input.positionsOS);
-
+                output.positionWS = TransformObjectToWorld(input.positionsOS);
+                
                 return output;
             }
 
-            half4 Frag(const Varyings input) : SV_TARGET
+            float4 Frag(const Varyings input) : SV_TARGET
             {
-                return half4(1, 0.5, 0.3, 1);
+                return _Color * clamp(input.positionWS.x, 0, 1);
+                /* return _Color * input.positionWS.x */
             }
             ENDHLSL
         }
