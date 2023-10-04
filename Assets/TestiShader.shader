@@ -25,13 +25,14 @@ Shader "Custom/TestiShader"
             struct Attributes
             {
                 float3 positionsOS : POSITION;
-                float3 normalOS : NORMAL;   /*KESKEN*/
+                float3 normalOS : NORMAL;
             };
 
             struct Varyings
             {
                 float4 positionHCS : SV_POSITION;
                 float3 positionWS : TEXCOORD0;
+                float3 normalWS : TEXCOORD1;
             };
 
             CBUFFER_START(UnityPerMaterial)
@@ -44,14 +45,17 @@ Shader "Custom/TestiShader"
 
                 output.positionHCS = TransformObjectToHClip(input.positionsOS);
                 output.positionWS = TransformObjectToWorld(input.positionsOS);
+                output.normalWS = mul((float3x3)unity_WorldToObject, input.normalOS);
                 
                 return output;
             }
 
             float4 Frag(const Varyings input) : SV_TARGET
             {
-                return _Color * clamp(input.positionWS.x, 0, 1);
-                /* return _Color * input.positionWS.x */
+                float lightIntensity = dot(input.normalWS, normalize(float3(1, 1, 1)));
+                return _Color * lightIntensity;
+                //return _Color * clamp(input.positionWS.x, 0, 1);
+                //return _Color * input.positionWS.x
             }
             ENDHLSL
         }
